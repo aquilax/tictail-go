@@ -1,10 +1,20 @@
 package tictail
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
+)
+
+const (
+	API_URL = "https://api.tictail.com"
+	API_VER = "v1"
+
+	API_GET = "GET"
+
+	API_STORES = "stores"
 )
 
 type TictailAuth interface {
@@ -41,18 +51,35 @@ func (t Tictail) prepareRequestHeaders(req *http.Request) {
 
 func (t Tictail) makeRequest(method string, url string, data io.Reader) (int, []byte) {
 	req, err := http.NewRequest(method, url, data)
-	if err != nil {
-		t.log.Print(err)
-	}
+	t.logError(err)
 	t.prepareRequestHeaders(req)
 	resp, err := t.client.Do(req)
-	if err != nil {
-		t.log.Print(err)
-	}
+	t.logError(err)
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
+	t.logError(err)
+	return resp.StatusCode, body
+}
+
+func (t Tictail) createUrl(resource, params string) string {
+	return API_URL + "/" + API_VER + "/" + resource + "/" + params
+}
+
+func (t Tictail) GetStore(id string) (TStore, TError) {
+	var terror TError
+	var tstore TStore
+	url := t.createUrl(API_STORES, id)
+	code, body := t.makeRequest(API_GET, url, nil)
+	if code < 200 || code > 299 {
+		t.logError(json.Unmarshal(body, &terror))
+	} else {
+		t.logError(json.Unmarshal(body, &tstore))
+	}
+	return tstore, terror
+}
+
+func (t Tictail) logError(err error) {
 	if err != nil {
 		t.log.Print(err)
 	}
-	return resp.StatusCode, body
 }
