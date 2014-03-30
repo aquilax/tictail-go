@@ -6,8 +6,8 @@ import (
 
 type AuthMock struct{}
 
-func (am AuthMock) getAuthCode() string {
-	return "authcode"
+func (am AuthMock) GetAccessToken() string {
+	return "access_token"
 }
 
 type LoggerMock struct{}

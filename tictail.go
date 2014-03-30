@@ -18,7 +18,7 @@ const (
 )
 
 type TictailAuth interface {
-	getAuthCode() string
+	GetAccessToken() string
 }
 
 type TictailLogger interface {
@@ -43,7 +43,7 @@ func NewTictail(ta TictailAuth, logger TictailLogger) *Tictail {
 func (t Tictail) prepareRequestHeaders(req *http.Request) {
 	// Add auth header
 	// ref: https://tictail.com/developers/documentation/authentication/#Make_your_first_API_call
-	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", t.ta.getAuthCode()))
+	req.Header.Add("Authorization", fmt.Sprintf("Bearer %s", t.ta.GetAccessToken()))
 	// API expects content-type to be application/json
 	// ref: https://tictail.com/developers/documentation/api-reference/#always-set-the-required-headers
 	req.Header.Add("Content-Type", "application/json")
